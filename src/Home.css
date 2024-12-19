@@ -81,8 +81,6 @@ body {
 }
 
 .next-button {
-    background-color: goldenrod;
-    color: #fff;
     padding: 24px 54px;
     font-size: 16px;
     border-radius: 8px;
@@ -95,6 +93,7 @@ body {
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
     color: #000000;    
+    background-color: #EDAA00 !important;
 }
 
 .email-input.error {
