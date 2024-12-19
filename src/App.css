@@ -1,0 +1,272 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.app-container {
+  width: 90%;
+  margin: 20px auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-family: Roboto;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 30px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+}
+
+.filters {
+  display: flex;
+  /* Use flexbox for gap to work */
+  gap: 60px;
+  /* Adjust gap size as needed */
+}
+
+.filters span {
+  font-family: Roboto, sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 45.85px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  cursor: pointer;
+  /* Optional: makes the spans look clickable */
+  color: #000000;
+  /* Default non-selected color */
+}
+
+.filters span.selected {
+  color: #EDAA00;
+  /* Selected span color */
+}
+
+
+.new-appointment-btn {
+  font-family: Roboto;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 25px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  border-radius: 7px;
+  padding: 15px 22px;
+  gap: 12px;
+  background-color: #EDAA00;
+  cursor: pointer;
+}
+
+.new-appointment-btn:hover {
+  background-color: #e09e00;
+}
+
+.styled-box {
+  width: 100%;
+  height: 4px;
+  /* top: 223px;
+  left: 39px;  */
+  gap: 0px;
+  /* Gap is unnecessary for a single element */
+  border-radius: 4px 0px 0px 0px;
+  background: #D9D9D9;
+  opacity: 0.3;
+  /* Opacity is a fractional value (0-1) */
+}
+
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0;
+}
+
+.filter-section-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-section-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-left-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background-color: #F9F6FF;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+.filter-left-with-icon span {
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 25px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+}
+
+.sort-left-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background-color: #F9F6FF;
+  border-radius: 1px;
+  cursor: pointer;
+}
+
+.sort-left-with-icon span {
+  font-family: Roboto;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 25px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+}
+
+.filter-section-right .searchbar{
+  width: 342px;
+  height: 47px;
+  background-color: #F4EFFF80;
+  border-radius: 14px;
+}
+
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #F9FAFB;
+  
+}
+
+.appointments-table th,
+.appointments-table td {
+  border: 1px solid #e0e0e0;
+  padding: 30px 20px;
+  text-align: left;
+}
+
+.appointments-table th {
+  background-color: #f7b500;
+  font-family: Roboto;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+  border: none;
+}
+
+.appointments-table td{
+  font-family: Roboto;
+font-size: 24px;
+font-weight: 500;
+line-height: 30px;
+text-align: left;
+text-underline-position: from-font;
+text-decoration-skip-ink: none;
+pad: 5px 20px;
+color: #000000;
+border: none;
+}
+
+
+.status-dropdown {
+  background-color: #f0f0f0;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.pagination-container {
+  text-align: center !important;
+  padding: 10px 50px;
+}
+
+.pagination {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination button {
+  padding: 0px 10px;
+  cursor: pointer;
+  /* transition: background-color 0.3s, border-color 0.3s; */
+  font-family: Roboto;
+  font-size: 18.15px;
+  font-weight: 500;
+  line-height: 51.99px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+
+}
+
+.pagination button.active {
+  background-color: #F0C456C4;
+  color: #000000;
+  border-color: #F0C456C4;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+}
+
+.status-dropdown {
+  position: relative;
+  display: inline-block;
+  padding: 8px 13px;
+  border: 1px solid #FFFFFF;
+  border: 14px;
+}
+
+.status-dropdown select {
+  font-family: Roboto;
+font-size: 15px;
+font-weight: 600;
+line-height: 25px;
+text-align: left;
+text-underline-position: from-font;
+text-decoration-skip-ink: none;
+color: #000000;
+
+}
+
+.status-dropdown svg {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
