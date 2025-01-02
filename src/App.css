@@ -270,3 +270,78 @@ color: #000000;
   transform: translateY(-50%);
   pointer-events: none;
 }
+
+.date-filter {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-filter input {
+  padding: 5px;
+  font-size: 14px;
+}
+
+.options-modal {
+  position: absolute;
+  background-color: #fff;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 0;
+  width: 150px;
+  top: 100%; 
+  right: 0; 
+  z-index: 1000;
+}
+
+.options-modal div {
+  padding: 10px 15px;
+  font-family: Roboto;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.options-modal div:hover {
+  background-color: #f5f5f5;
+}
+
+.options-modal div:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.options-modal div:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+
+.searchbar {
+  width: 300px;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.searchbar:focus {
+  border-color: #007BFF; /* Blue border when focused */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Focus shadow */
+}
+
+.searchbar::placeholder {
+  color: #888; /* Lighter color for placeholder */
+}
+
+.searchbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+

@@ -1,65 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
 import { CiFilter } from "react-icons/ci";
 import { BiSort } from "react-icons/bi";
-import { IoIosArrowDown } from "react-icons/io";
+import AddAppointmentModal from "./components/AddAppointmentModal";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format, isSameDay, parse } from "date-fns";
+import { EditModal } from "./components/EditModal";
+import { ViewDetails } from "./components/ViewDetails";
+import { useAuth } from './auth/AuthContext';
 
 function Table() {
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-    {
-      id: 2,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-    {
-      id: 3,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-    {
-      id: 4,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-    {
-      id: 5,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-    {
-      id: 6,
-      client: "Alex Turner",
-      status: "Confirmed",
-      appointmentTime: "Dec 20 2025, 8:00 am (EST)",
-      owner: "Alex Turner",
-    },
-  ]);
+
+  const [appointments, setAppointments] = useState([]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: "client", direction: "asc" });
+  const [showModal, setShowModal] = useState(false);
+
+  const [showOptionsModal, setShowOptionsModal] = useState(null);
+  const [editAppointment, setEditAppointment] = useState(null);
+  const [viewDetailsAppointment, setViewDetailsAppointment] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+
+
+  const { authData } = useAuth();
+
+  const email = authData?.loginResponse?.userEmail;
+  // const assignedUser = email.split("@")[0];
+
+
+  const normalizeDate = (date) => {
+    if (!date) return null;
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  };
+
+
+  function formatAssignedUser(assignedUser) {
+    if (!assignedUser) {
+      return "Anonymous";
+    }
+
+    // List of prefixes to remove
+    const prefixesToRemove = ['WEST -', 'YALE -', 'WEBER -', 'EAST -', 'WEST-', 'EAST-', 'WEBER-', 'YALE-'];
+
+    // Remove the prefix if it exists
+    prefixesToRemove.forEach(prefix => {
+      if (assignedUser.startsWith(prefix)) {
+        assignedUser = assignedUser.slice(prefix.length);
+      }
+    });
+
+    return assignedUser.trim();
+  }
+
+
+
+  const formatToDayMonthYear = (dateString) => {
+    if (!dateString) return null;
+
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  };
+
+
+  // for date filter
+  const [dateRange, setDateRange] = useState([null, null]);
+
+  const [startDate, endDate] = dateRange;
+
+  const parseCustomDate = (dateString) => {
+    if (!dateString || typeof dateString !== "string") return null;
+
+    // Handle YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return new Date(dateString);
+    }
+
+    // Handle MM/DD/YYYY with time and AM/PM
+    const parts = dateString.split(/,?\s+/);
+    if (parts.length < 3) return null;
+
+    const [datePart, timePart, period] = parts;
+
+    // Ensure datePart and timePart are valid
+    if (!datePart || !timePart || !period) return null;
+
+    const [month, day, year] = datePart.split("/").map(Number);
+    if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
+
+    let [hours, minutes, seconds] = timePart.split(":").map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return null;
+    if (!seconds) seconds = 0; // Default seconds if not provided
+
+    // Adjust for AM/PM
+    if (period === "PM" && hours < 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+
+    return new Date(year, month - 1, day, hours, minutes, seconds);
+  };
+
+
+
+  const id = authData?.loginResponse?.id;
+  const loginResponse = authData?.loginResponse
+  const accessToken = authData?.loginResponse?.access;
+
+
+  const baseURL = process.env.REACT_APP_API_BASE_URL || "https://apptbackend.cercus.app"
+  // const baseURL = process.env.REACT_APP_API_BASE_URL || "https://tattosagencyghl.onrender.com"
+  useEffect(() => {
+    if (!accessToken) {
+      // If no token, maybe trigger a refresh or log the user out
+      return;
+    }
+
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        };
+        const response = await axios.get(`${baseURL}/get-appointments/?id=${id}`, config);
+        const fetchedAppointments = response.data;
+
+
+        // Map API response to your data structure
+        const mappedAppointments = fetchedAppointments.map((appt) => ({
+          id: appt.id,
+          user: appt.user,
+          sessions: appt.sessions,
+          appointment_title: appt.appointment_title,
+          start_date: appt.start_date,
+          // start_time: appt.start_time,
+          // end_time: appt.end_time,
+          assigned_user: appt.assigned_user,
+          created_at: appt.created_at,
+          title: appt.appointment_title,
+          appointment_location: appt.appointment_location,
+          tatto_idea: appt.tatto_idea,
+          reference_image: appt.reference_image,
+        }));
+
+        setAppointments(mappedAppointments);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
+  }, [loginResponse, id, baseURL]);
+
+
+
+
+
+  const rowsPerPage = 3;
+
 
   const handleFilterClick = (filter) => {
     setSelectedFilter(filter);
+    setCurrentPage(1);
   };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 3;
-
-  const totalPages = Math.ceil(appointments.length / rowsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -73,21 +190,177 @@ function Table() {
     );
   };
 
-  const paginatedAppointments = appointments.slice(
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // const handleSortChange = (key) => {
+  //   setSortConfig((prevConfig) => ({
+  //     key,
+  //     direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc",
+  //   }));
+  // };
+
+  // Sort appointments
+  // const sortedAppointments = [...appointments].sort((a, b) => {
+  //   if (a[sortConfig.key] < b[sortConfig.key]) {
+  //     return sortConfig.direction === "asc" ? -1 : 1;
+  //   }
+  //   if (a[sortConfig.key] > b[sortConfig.key]) {
+  //     return sortConfig.direction === "asc" ? 1 : -1;
+  //   }
+  //   return 0;
+  // });
+
+  const handleSortChange = (key) => {
+    setSortConfig((prevConfig) => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  // Sort appointments
+  const sortedAppointments = [...appointments].sort((a, b) => {
+    let aKey = a[sortConfig.key];
+    let bKey = b[sortConfig.key];
+
+    // Special handling for nested keys
+    if (sortConfig.key === "username") {
+      aKey = a.user?.username ?? "";
+      bKey = b.user?.username ?? "";
+    }
+
+    // Handle string comparison
+    if (typeof aKey === "string" && typeof bKey === "string") {
+      aKey = aKey.toLowerCase();
+      bKey = bKey.toLowerCase();
+    }
+
+    // Determine sorting order
+    const direction = sortConfig.direction === "asc" ? 1 : -1;
+    if (aKey < bKey) return -1 * direction;
+    if (aKey > bKey) return 1 * direction;
+    return 0;
+  });
+
+
+
+  // Filter appointments based on search term and selected filter
+  const filteredAppointments = sortedAppointments.filter((appointment) => {
+    const matchesSearchTerm =
+      appointment.user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    // ||
+    // appointment.assigned_user.toLowerCase().includes(searchTerm.toLowerCase())
+    // appointment.status.toLowerCase().includes(searchTerm.toLowerCase());
+    // appointment.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // appointment.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // appointment.status.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      selectedFilter === "All" || appointment.status === selectedFilter;
+
+
+    const contactCreatedAtDate = appointment?.sessions[0]?.session_date
+      ? parseCustomDate(appointment?.sessions[0]?.session_date)
+      : null;
+
+    // Ensure you don't override the contactCreatedAtDate with startDate or other filters
+    const adjustedEndDate = endDate
+      ? new Date(new Date(endDate).setHours(23, 59, 59, 999))  // Adjust endDate to the last moment of the day
+      : null;
+
+    // Normalize the date values without affecting the original contactCreatedAtDate
+    const startDateNormalized = normalizeDate(startDate);
+    const adjustedEndDateNormalized = normalizeDate(adjustedEndDate);
+    const contactCreatedAtDateNormalized = normalizeDate(contactCreatedAtDate);
+
+    // console.log(startDateNormalized,'startDateNormalized')
+    // console.log(adjustedEndDateNormalized,'adjustedEndDateNormalized')
+    // console.log(contactCreatedAtDate,'contactCreatedAtDate')
+    // console.log(appointment?.sessions[0]?.session_date,'appointment?.sessions[0]?.session_date')
+
+    // Compare the contactCreatedAtDate with the date range (keeping original API data intact)
+    const matchesDateRange =
+      (!startDateNormalized || contactCreatedAtDateNormalized >= startDateNormalized) &&
+      (!adjustedEndDateNormalized || contactCreatedAtDateNormalized <= adjustedEndDateNormalized);
+
+
+    return matchesSearchTerm && matchesFilter && matchesDateRange;
+  });
+
+
+  const totalPages = Math.ceil(filteredAppointments.length / rowsPerPage);
+
+
+  const paginatedAppointments = filteredAppointments.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
+
+  const OptionsModal = ({ onEdit, onDelete, onClose, onViewDetails }) => (
+    <div className="options-modal">
+      <div onClick={onViewDetails}>View Details</div>
+      {/* <div onClick={onEdit}>Edit</div> */}
+      {/* <div onClick={onDelete}>Delete</div> */}
+      <div onClick={onClose}>Close</div>
+    </div>
+  );
+
+  const handleSaveEdit = (id, updatedAppointment) => {
+    setAppointments((prevAppointments) =>
+      prevAppointments.map((appt) =>
+        appt.id === id ? updatedAppointment : appt
+      )
+    );
+    setEditAppointment(null);
+  };
+
+  {
+    viewDetailsAppointment && (
+      <ViewDetails
+        appointment={viewDetailsAppointment}
+        onClose={() => setViewDetailsAppointment(null)}
+      />
+    )
+  }
+
+  // {
+  //   editAppointment && (
+  //     <EditModal
+  //       appointment={editAppointment}
+  //       onSave={handleSaveEdit}
+  //       onClose={() => setEditAppointment(null)}
+  //     />
+  //   )
+  // }
+
+  // const handleDeleteAppointment = (id) => {
+  //   setAppointments((prevAppointments) =>
+  //     prevAppointments.filter((appt) => appt.id !== id)
+  //   );
+  //   setShowOptionsModal(null);
+  // };
+
 
   return (
     <div className="app-container">
       {/* Header */}
       <div className="header">
         <h1>Appointments</h1>
-        <button className="new-appointment-btn">+ New Appointment</button>
+        {/* <button className="new-appointment-btn" onClick={() => setShowModal(true)}>+ New Appointment</button> */}
       </div>
 
-      <div className="filters">
-        {["All", "Upcoming", "Cancelled"].map((filter) => (
+      {/* {showModal && (
+        <AddAppointmentModal
+          onClose={() => setShowModal(false)}
+          onSave={handleAddAppointment}
+        />
+      )} */}
+
+      {/* Filter Options */}
+      {/* <div className="filters">
+        {["All", "Confirmed", "Cancelled"].map((filter) => (
           <span
             key={filter}
             className={selectedFilter === filter ? "selected" : ""}
@@ -96,28 +369,44 @@ function Table() {
             {filter}
           </span>
         ))}
-      </div>
+      </div> */}
 
       <div className="styled-box"></div>
 
+      {/* Filter and Search Section */}
       <div className="filter-section">
         <div className="filter-section-left">
           <div className="filter-left-with-icon">
             <CiFilter />
             <span>Filter</span>
+            <DatePicker
+              selected={startDate}
+              onChange={(update) => setDateRange(update)}
+              startDate={startDate}
+              endDate={endDate}
+              selectsRange
+              isClearable
+              placeholderText="Select a date range"
+              className="date-picker"
+            />
           </div>
-          <div className="sort-left-with-icon">
-            <BiSort />
-            <span>Sort By</span>
-          </div>
+          {/* <div className="sort-left-with-icon" onClick={() => handleSortChange("assigned_user")}>
+            <BiSort /> */}
+          {/* <span>Sort By Appointment Owner ({sortConfig.direction === "asc" ? "↑" : "↓"})</span> */}
+          {/* <span>Sort By Appointment Owner ({sortConfig.direction === "asc" ? "↓" : "↑"})</span>
+          </div> */}
         </div>
         <div className="filter-section-right">
-          <div>
-            <input type="text" className="searchbar" />
-          </div>
-          <div>
+          <input
+            type="text"
+            className="searchbar"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          {/* <div>
             <img src={require("./icons/box.png")} alt="box" />
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -126,46 +415,109 @@ function Table() {
         <thead>
           <tr>
             <th>No.</th>
-            <th>Client</th>
-            <th>Status</th>
-            <th>Appointment Time</th>
+            <th onClick={() => handleSortChange("client")}>
+              Client {sortConfig.key === "client" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+            </th>
+            {/* <th>Status</th> */}
+            <th onClick={() => handleSortChange("appointmentTime")}>
+              Appointment Time{" "}
+              {sortConfig.key === "appointmentTime" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+            </th>
             <th>Appointment Owner</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {paginatedAppointments.map((appointment, index) => (
-            <tr key={appointment.id}>
-              <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-              <td>{appointment.client}</td>
-              <td>
-                <div className="status-dropdown">
-                  <select
-                    value={appointment.status}
-                    onChange={(e) => handleStatusChange(appointment.id, e.target.value)}
-                  >
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Not Confirmed">Not Confirmed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                  {/* <IoIosArrowDown /> */}
-                </div>
-              </td>
-              <td>{appointment.appointmentTime}</td>
-              <td>{appointment.owner}</td>
-              <td>
-                <img src={require("./icons/dots.png")} alt="dots" />
+          {loading ? (
+            <tr>
+              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                Loading...
               </td>
             </tr>
-          ))}
+          ) : filteredAppointments.length === 0 ? (
+            <tr>
+              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                No data found
+              </td>
+            </tr>
+          ) : (
+            paginatedAppointments.map((appointment, index) => (
+              <tr key={appointment.id}>
+                <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                {/* <td>{appointment.user.username}</td> */}
+                <td>{formatAssignedUser(appointment?.user?.username)}</td>
+
+                {/* <td>
+                  <div className="status-dropdown">
+                    <select
+                      value={appointment.status}
+                      onChange={(e) => handleStatusChange(appointment.id, e.target.value)}
+                    >
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                </td>*/}
+                {/* <td>{formatToDayMonthYear(appointment.start_date)}, {appointment.start_time}-{appointment.end_time}</td> */}
+
+                {/* new Time and date with sessions */}
+                <td>
+                  {appointment.sessions && appointment.sessions.length > 0
+                    ? (
+                      <div>
+                        {formatToDayMonthYear(appointment.sessions[0].session_date)} , {appointment.sessions[0].start_time} - {appointment.sessions[0].end_time}
+                      </div>
+                    )
+                    : "No session available"}
+                </td>
+
+                {/* <td>{appointment.assigned_user}</td> */}
+                <td>{formatAssignedUser(appointment?.assigned_user?.username)}</td>
+                {/* <td>{assignedUser}</td> */}
+
+                <td style={{ position: "relative" }}>
+                  <img
+                    src={require("./icons/dots.png")}
+                    alt="dots"
+                    onClick={() => setShowOptionsModal(appointment.id)}
+                    style={{ cursor: "pointer" }}
+                  />
+                  {showOptionsModal === appointment.id && (
+                    <OptionsModal
+                      onViewDetails={() => {
+                        setViewDetailsAppointment(appointment);
+                        setShowOptionsModal(null);
+                      }}
+                      // onEdit={() => {
+                      //   setEditAppointment(appointment);
+                      //   setShowOptionsModal(null);
+                      // }}
+                      // onDelete={() => handleDeleteAppointment(appointment.id)}
+                      onClose={() => setShowOptionsModal(null)}
+                    />
+                  )}
+                </td>
+                {viewDetailsAppointment && (
+                  <ViewDetails
+                    appointment={viewDetailsAppointment}
+                    onClose={() => setViewDetailsAppointment(null)}
+                  />
+                )}
+                {/* {editAppointment && (
+                  <EditModal
+                    appointment={editAppointment}
+                    onSave={handleSaveEdit}
+                    onClose={() => setEditAppointment(null)}
+                  />
+                )} */}
+              </tr>
+            ))
+          )}
 
           <tr className="pagination-box">
             <td colSpan="6" className="pagination-container">
               <div className="pagination">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
+                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                   &lt;
                 </button>
                 {[...Array(totalPages).keys()].map((number) => (
@@ -177,10 +529,7 @@ function Table() {
                     {number + 1}
                   </button>
                 ))}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
+                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
                   &gt;
                 </button>
               </div>
@@ -188,7 +537,7 @@ function Table() {
           </tr>
         </tbody>
       </table>
-    </div>
+    </div >
   );
 }
 

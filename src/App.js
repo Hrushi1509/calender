@@ -7,16 +7,25 @@ import Table from "./Table";
 import Home from "./Home";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SignUp from "./pages/Signup";
+import ProtectedRoute from "./auth/ProtectedRoute";
 
 function App() {
+
+  const isAuthenticated = !!localStorage.getItem("accessToken");
 
   return (
     <div className="bg-image">
        <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/table" element={<Table />} />
+        <Route path="/login" element={<Home />} />
+        <Route path="/" element={<SignUp />} />
+        <Route
+            path="/get-appointments"
+            element={<ProtectedRoute isAuthenticated={isAuthenticated} element={<Table />} />}
+          />
       </Routes>
+    
     </Router>
     </div>
   );
