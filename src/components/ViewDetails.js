@@ -1,14 +1,30 @@
 import { useState } from "react";
 import './ViewDetails.css';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 export const ViewDetails = ({ appointment, onClose }) => {
-  const convertReferenceImageURL = (url) => {
-    if (url.startsWith("/media/")) {
-      const decodedURL = decodeURIComponent(url.replace("/media/", ""));
-      return decodedURL;
-    }
-    return url;
-  };
+  // const convertReferenceImageURL = (url) => {
+  //   if (url.startsWith("/media/")) {
+  //     const decodedURL = decodeURIComponent(url.replace("/media/", ""));
+  //     return decodedURL;
+  //   }
+  //   return url;
+  // };
+
+  // const convertReferenceImageURL = (url) => {
+  //   if (url.startsWith("/media/")) {
+  //     const decodedURL = decodeURIComponent(url.replace("/media/", ""));
+  //     // Ensure the URL starts with "https://"
+  //     if (decodedURL.startsWith("https:/") && !decodedURL.startsWith("https://")) {
+  //       return decodedURL.replace("https:/", "https://");
+  //     }
+  //     return decodedURL;
+  //   }
+  //   return url;
+  // };
+
 
   function formatAssignedUser(assignedUser) {
     if (!assignedUser) {
@@ -28,11 +44,20 @@ export const ViewDetails = ({ appointment, onClose }) => {
     return assignedUser.trim();
   }
 
-  const referenceImageURL = convertReferenceImageURL(appointment.reference_image);
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
 
+  // const referenceImageURL = appointment.reference_image ? convertReferenceImageURL(appointment.reference_image) : "";
+
+  // const refImage= "https://links.tattooagency.com/conversations-assets/location/0rrNZinFkHbXD50u5nyq/conversations/R3B18mlq2q8zKMlT7SK3/d09112f8-b5bd-420b-b728-d0bcc9aa11ff.jpg"
   return (
     <div className="modal-overlay">
-      <div className="modal-content scrollable">
+      <div className="modal-content-details scrollable">
         <h3>Appointment Details</h3>
         <div className="form-group">
           <label>Title:</label>
@@ -54,7 +79,7 @@ export const ViewDetails = ({ appointment, onClose }) => {
           <label>Tattoo Idea:</label>
           <p>{appointment.tatto_idea || "N/A"}</p>
         </div>
-        
+
         {/* Session details */}
         <div className="form-group">
           <label>Sessions:</label>
@@ -73,15 +98,27 @@ export const ViewDetails = ({ appointment, onClose }) => {
             <p>No sessions available.</p>
           )}
         </div>
-        
+
         <div className="form-group">
           <label>Reference Image:</label>
           <div className="image-preview">
-            <img
-              src={referenceImageURL}
-              alt="Reference"
-              style={{ width: "100%", maxHeight: "200px", objectFit: "contain" }}
-            />
+
+            {appointment.reference_image && appointment.reference_image.length > 0 ? (
+              appointment.reference_image.map((image) => (
+                <img
+                  key={image.id}
+                  src={image.url}
+                  alt={`Reference ${image.id}`}
+                  style={{ width: "100%", maxHeight: "200px", objectFit: "contain", marginBottom: "10px" }}
+                />
+              ))
+
+
+            ) : (
+              <p>No reference images available.</p>
+            )
+            }
+
           </div>
         </div>
 

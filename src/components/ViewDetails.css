@@ -11,7 +11,7 @@
   z-index: 1000;
 }
 
-.modal-content {
+.modal-content-details {
   background: #f9f9f9;
   border-radius: 12px;
   width: 90%;
@@ -23,7 +23,7 @@
   font-family: 'Arial', sans-serif;
 }
 
-.modal-content h3 {
+.modal-content-details h3 {
   font-size: 24px;
   color: #333;
   margin-bottom: 20px;
@@ -131,4 +131,8 @@ button[type="submit"]:hover {
 .session-details p {
   margin: 5px 0;
 }
+
+
+
+
 

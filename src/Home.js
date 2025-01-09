@@ -57,6 +57,7 @@ function Home() {
         // Store tokens in localStorage if needed
         localStorage.setItem("refreshToken", refresh);
         localStorage.setItem("accessToken", access);
+        localStorage.setItem("loginUserId", loginUserId);
 
         // console.log("Login successful:", response.data);
         // console.log("accessToken",access);
@@ -132,6 +133,15 @@ function Home() {
           >
             Sign In
           </button>
+          <p className="redirect-paragraph">
+            New user?{" "}
+            <span
+              className="redirect-link"
+              onClick={() => navigate("/")}
+            >
+              Sign up here
+            </span>
+          </p>
         </div>
       </div>
     </div>

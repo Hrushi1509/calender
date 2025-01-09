@@ -8,14 +8,18 @@
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.5.46",
     "react": "^18.2.0",
+    "react-big-calendar": "^1.17.1",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.4.0",
     "react-router-dom": "^7.0.2",
     "react-scripts": "5.0.1",
-    "web-vitals": "^4.2.4",
-    "proxy": "https://tattosagencyghl.onrender.com"
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1",
+    "web-vitals": "^4.2.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,5 +44,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0"
   }
 }

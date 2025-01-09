@@ -10,8 +10,10 @@ import { format, isSameDay, parse } from "date-fns";
 import { EditModal } from "./components/EditModal";
 import { ViewDetails } from "./components/ViewDetails";
 import { useAuth } from './auth/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-function Table() {
+
+function Table({ showTable, setShowTable }) {
 
   const [appointments, setAppointments] = useState([]);
 
@@ -20,15 +22,19 @@ function Table() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "client", direction: "asc" });
   const [showModal, setShowModal] = useState(false);
+  const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
+
 
   const [showOptionsModal, setShowOptionsModal] = useState(null);
   const [editAppointment, setEditAppointment] = useState(null);
   const [viewDetailsAppointment, setViewDetailsAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [originalSessions, setOriginalSessions] = useState({});
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
 
-
-  const { authData } = useAuth();
+  const { authData, setAuthData } = useAuth();
+  const navigate = useNavigate();
 
   const email = authData?.loginResponse?.userEmail;
   // const assignedUser = email.split("@")[0];
@@ -40,6 +46,10 @@ function Table() {
     normalized.setHours(0, 0, 0, 0);
     return normalized;
   };
+
+  // const normalizeDate = (date) => {
+  //   return date ? new Date(date.toISOString().split("T")[0]) : null; // Normalize to UTC without time
+  // };
 
 
   function formatAssignedUser(assignedUser) {
@@ -74,10 +84,13 @@ function Table() {
   };
 
 
+
   // for date filter
   const [dateRange, setDateRange] = useState([null, null]);
 
+
   const [startDate, endDate] = dateRange;
+
 
   const parseCustomDate = (dateString) => {
     if (!dateString || typeof dateString !== "string") return null;
@@ -112,29 +125,29 @@ function Table() {
 
 
 
-  const id = authData?.loginResponse?.id;
+  const id = authData?.loginResponse?.id || localStorage.getItem('loginUserId');
   const loginResponse = authData?.loginResponse
-  const accessToken = authData?.loginResponse?.access;
+  const accessToken = authData?.loginResponse?.access || localStorage.getItem("accessToken");
 
+  const tokenFromStorage = localStorage.getItem('accessToken');
+  const userId = localStorage.getItem('loginUserId');
 
   const baseURL = process.env.REACT_APP_API_BASE_URL || "https://apptbackend.cercus.app"
   // const baseURL = process.env.REACT_APP_API_BASE_URL || "https://tattosagencyghl.onrender.com"
   useEffect(() => {
-    if (!accessToken) {
-      // If no token, maybe trigger a refresh or log the user out
-      return;
-    }
+
 
     const fetchAppointments = async () => {
       setLoading(true);
+
       try {
 
         const config = {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${tokenFromStorage}`,
           },
         };
-        const response = await axios.get(`${baseURL}/get-appointments/?id=${id}`, config);
+        const response = await axios.get(`${baseURL}/get-appointments/?id=${id}`, config) || await axios.get(`${baseURL}/get-appointments/?id=${userId}`, config)
         const fetchedAppointments = response.data;
 
 
@@ -152,7 +165,7 @@ function Table() {
           title: appt.appointment_title,
           appointment_location: appt.appointment_location,
           tatto_idea: appt.tatto_idea,
-          reference_image: appt.reference_image,
+          reference_image: appt.reference_images,
         }));
 
         setAppointments(mappedAppointments);
@@ -165,12 +178,13 @@ function Table() {
 
     fetchAppointments();
   }, [loginResponse, id, baseURL]);
+  // }, []);
 
 
 
 
 
-  const rowsPerPage = 3;
+  // const rowsPerPage = 3;
 
 
   const handleFilterClick = (filter) => {
@@ -247,25 +261,73 @@ function Table() {
 
 
   // Filter appointments based on search term and selected filter
+  // const filteredAppointments = sortedAppointments.filter((appointment) => {
+  //   const matchesSearchTerm =
+  //     appointment.user.username.toLowerCase().includes(searchTerm.toLowerCase())
+
+  //   const matchesFilter =
+  //     selectedFilter === "All" || appointment.status === selectedFilter;
+
+
+  //   const contactCreatedAtDate = appointment?.sessions[0]?.session_date
+  //     ? parseCustomDate(appointment?.sessions[0]?.session_date)
+  //     : null;
+
+  //   // Ensure you don't override the contactCreatedAtDate with startDate or other filters
+  //   const adjustedEndDate = endDate
+  //     ? new Date(new Date(endDate).setHours(23, 59, 59, 999))  // Adjust endDate to the last moment of the day
+  //     : null;
+
+  //   // Normalize the date values without affecting the original contactCreatedAtDate
+  //   const startDateNormalized = normalizeDate(startDate);
+  //   const adjustedEndDateNormalized = normalizeDate(adjustedEndDate);
+  //   const contactCreatedAtDateNormalized = normalizeDate(contactCreatedAtDate);
+
+  //   // console.log(startDateNormalized,'startDateNormalized')
+  //   // console.log(adjustedEndDateNormalized,'adjustedEndDateNormalized')
+  //   // console.log(contactCreatedAtDate,'contactCreatedAtDate')
+  //   // console.log(appointment?.sessions[0]?.session_date,'appointment?.sessions[0]?.session_date')
+
+  //   // Compare the contactCreatedAtDate with the date range (keeping original API data intact)
+
+
+
+  //   // Filter sessions based on the date range
+  //   const filteredSessions = appointment.sessions.filter((session) => {
+  //     const sessionDate = session?.session_date
+  //       ? normalizeDate(parseCustomDate(session.session_date))
+  //       : null;
+
+  //     return (
+  //       (!startDateNormalized || sessionDate >= startDateNormalized) &&
+  //       (!adjustedEndDateNormalized || sessionDate <= adjustedEndDateNormalized)
+  //     );
+  //   });
+
+  //   appointment.sessions = filteredSessions;
+
+
+  //   const matchesDateRange =
+  //     (!startDateNormalized || contactCreatedAtDateNormalized >= startDateNormalized) &&
+  //     (!adjustedEndDateNormalized || contactCreatedAtDateNormalized <= adjustedEndDateNormalized);
+
+
+  //   return matchesSearchTerm && matchesFilter && matchesDateRange;
+  // });
+
+
+
   const filteredAppointments = sortedAppointments.filter((appointment) => {
     const matchesSearchTerm =
-      appointment.user.username.toLowerCase().includes(searchTerm.toLowerCase())
-    // ||
-    // appointment.assigned_user.toLowerCase().includes(searchTerm.toLowerCase())
-    // appointment.status.toLowerCase().includes(searchTerm.toLowerCase());
-    // appointment.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    // appointment.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    // appointment.status.toLowerCase().includes(searchTerm.toLowerCase());
+      appointment.user.username.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesFilter =
       selectedFilter === "All" || appointment.status === selectedFilter;
-
 
     const contactCreatedAtDate = appointment?.sessions[0]?.session_date
       ? parseCustomDate(appointment?.sessions[0]?.session_date)
       : null;
 
-    // Ensure you don't override the contactCreatedAtDate with startDate or other filters
     const adjustedEndDate = endDate
       ? new Date(new Date(endDate).setHours(23, 59, 59, 999))  // Adjust endDate to the last moment of the day
       : null;
@@ -275,19 +337,40 @@ function Table() {
     const adjustedEndDateNormalized = normalizeDate(adjustedEndDate);
     const contactCreatedAtDateNormalized = normalizeDate(contactCreatedAtDate);
 
-    // console.log(startDateNormalized,'startDateNormalized')
-    // console.log(adjustedEndDateNormalized,'adjustedEndDateNormalized')
-    // console.log(contactCreatedAtDate,'contactCreatedAtDate')
-    // console.log(appointment?.sessions[0]?.session_date,'appointment?.sessions[0]?.session_date')
+    // Check if the original session data is already stored
+    if (!originalSessions[appointment.id]) {
+      setOriginalSessions((prev) => ({
+        ...prev,
+        [appointment.id]: [...appointment.sessions], // Save a copy of original sessions
+      }));
+    }
 
-    // Compare the contactCreatedAtDate with the date range (keeping original API data intact)
+    // If no date range is set, reset the sessions to the original (before any date filter)
+    if (!startDateNormalized && !adjustedEndDateNormalized) {
+      appointment.sessions = originalSessions[appointment.id] || appointment.sessions;
+    } else {
+      // Filter sessions based on the date range
+      const filteredSessions = appointment.sessions.filter((session) => {
+        const sessionDate = session?.session_date
+          ? normalizeDate(parseCustomDate(session.session_date))
+          : null;
+
+        return (
+          (!startDateNormalized || sessionDate >= startDateNormalized) &&
+          (!adjustedEndDateNormalized || sessionDate <= adjustedEndDateNormalized)
+        );
+      });
+
+      appointment.sessions = filteredSessions;
+    }
+
     const matchesDateRange =
       (!startDateNormalized || contactCreatedAtDateNormalized >= startDateNormalized) &&
       (!adjustedEndDateNormalized || contactCreatedAtDateNormalized <= adjustedEndDateNormalized);
 
-
     return matchesSearchTerm && matchesFilter && matchesDateRange;
   });
+
 
 
   const totalPages = Math.ceil(filteredAppointments.length / rowsPerPage);
@@ -342,6 +425,14 @@ function Table() {
   //   setShowOptionsModal(null);
   // };
 
+  const handleLogout = () => {
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("loginUserId");
+    setAuthData(null); // Clear context or state
+    navigate('/login')
+  };
+
 
   return (
     <div className="app-container">
@@ -349,6 +440,12 @@ function Table() {
       <div className="header">
         <h1>Appointments</h1>
         {/* <button className="new-appointment-btn" onClick={() => setShowModal(true)}>+ New Appointment</button> */}
+        <div className="btn-groups">
+          <button className="btn-toggle" onClick={() => { setShowTable(!showTable) }}>{showTable ? "Calendar" : "List"}</button>
+          <button className="btn-logout" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
       </div>
 
       {/* {showModal && (
@@ -415,6 +512,7 @@ function Table() {
         <thead>
           <tr>
             <th>No.</th>
+            <th>Title</th>
             <th onClick={() => handleSortChange("client")}>
               Client {sortConfig.key === "client" && (sortConfig.direction === "asc" ? "↑" : "↓")}
             </th>
@@ -427,6 +525,7 @@ function Table() {
             <th></th>
           </tr>
         </thead>
+       
         <tbody>
           {loading ? (
             <tr>
@@ -445,23 +544,11 @@ function Table() {
               <tr key={appointment.id}>
                 <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
                 {/* <td>{appointment.user.username}</td> */}
+                <td>{formatAssignedUser(appointment?.title)}</td>
                 <td>{formatAssignedUser(appointment?.user?.username)}</td>
 
-                {/* <td>
-                  <div className="status-dropdown">
-                    <select
-                      value={appointment.status}
-                      onChange={(e) => handleStatusChange(appointment.id, e.target.value)}
-                    >
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                  </div>
-                </td>*/}
-                {/* <td>{formatToDayMonthYear(appointment.start_date)}, {appointment.start_time}-{appointment.end_time}</td> */}
 
-                {/* new Time and date with sessions */}
-                <td>
+                {/* <td>
                   {appointment.sessions && appointment.sessions.length > 0
                     ? (
                       <div>
@@ -469,7 +556,32 @@ function Table() {
                       </div>
                     )
                     : "No session available"}
+                </td> */}
+
+                <td>
+                  {appointment.sessions && appointment.sessions.length > 0 ? (
+                    <div>
+                      <select
+                        onChange={(e) => setSelectedSessionIndex(e.target.value)}
+                        value={selectedSessionIndex}
+                      >
+                        {appointment.sessions.map((session, index) => (
+                          <option key={index} value={index}>
+                            {formatToDayMonthYear(session.session_date)} , {session.start_time} - {session.end_time}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* <div>
+                        {formatToDayMonthYear(appointment.sessions[selectedSessionIndex].session_date)} ,
+                        {appointment.sessions[selectedSessionIndex].start_time} - {appointment.sessions[selectedSessionIndex].end_time}
+                      </div> */}
+                    </div>
+                  ) : (
+                    "No session available"
+                  )}
                 </td>
+
 
                 {/* <td>{appointment.assigned_user}</td> */}
                 <td>{formatAssignedUser(appointment?.assigned_user?.username)}</td>
@@ -513,10 +625,27 @@ function Table() {
               </tr>
             ))
           )}
+          
 
           <tr className="pagination-box">
             <td colSpan="6" className="pagination-container">
               <div className="pagination">
+
+                <div className="rows-per-page">
+                  <select
+                    id="rows-per-page"
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                  >
+                    {[10, 30, 50, 100].map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+
                 <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
                   &lt;
                 </button>
@@ -535,9 +664,9 @@ function Table() {
               </div>
             </td>
           </tr>
-        </tbody>
+          </tbody>
       </table>
-    </div >
+      </div>
   );
 }
 

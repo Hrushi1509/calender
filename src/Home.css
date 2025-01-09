@@ -45,7 +45,7 @@ body {
     padding: 30px;
     border-radius: 12px;
     width: 950px;
-    height:520px;
+    height:630px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -110,5 +110,17 @@ body {
     background-color: #ccc;
     cursor: not-allowed;
   }
+
+  .redirect-paragraph {
+    font-size: 18px;
+    font-family: Inter, sans-serif;
+    color: #000000;
+}
+
+.redirect-link {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+}
   
 
