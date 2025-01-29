@@ -38,7 +38,8 @@
 
 .date-section h4 {
   margin: 0;
-  font-size: 1.2rem;
+  /* font-size: 1.2rem; */
+  font-size: 18px;
 }
 
 .date-grid {
@@ -162,7 +163,13 @@ button[type="button"] {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
-
+.filter-dropdown {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: white;
+  cursor: pointer;
+}
 
 
 
@@ -171,7 +178,7 @@ button[type="button"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin: 7px 8px;
 }
 
 .toolbar-left {
@@ -206,6 +213,25 @@ button[type="button"] {
   margin: 0 10px;
   color: #333;
 }
+
+.today-button {
+  padding: 12px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px; 
+  font-weight: bold; 
+  border: none;
+  border-radius: 5px; 
+  cursor: pointer; 
+  transition: all 0.3s ease; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.today-button:hover {
+  background-color: #0056b3;
+}
+
 
 
 
@@ -308,6 +334,7 @@ button[type="button"] {
   align-items: flex-start;
   overflow: hidden;
   position: absolute;
+  z-index: 1;
 }
 
 .rbc-timeslot-group {
@@ -328,5 +355,55 @@ button[type="button"] {
     align-items: flex-start;
     gap: 10px;
 }
+
+
+/* Change the color of the current time indicator to red */
+.rbc-current-time-indicator {  
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #f80909;
+  pointer-events: none;
+}
+
+.date-item {
+  padding: 5px;
+  text-align: center;
+  cursor: pointer; /* Add pointer cursor */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.date-item:hover {
+  background-color: #eaeaea; /* Highlight on hover */
+  border-radius: 50%; /* Make it round */
+}
+
+.selected-date {
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+}
+
+.month-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.month-navigation button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #007bff;
+}
+
+.month-navigation button:hover {
+  color: #0056b3; /* Darker blue for hover */
+}
+
 
 

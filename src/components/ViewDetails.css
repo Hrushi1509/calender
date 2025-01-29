@@ -132,6 +132,33 @@ button[type="submit"]:hover {
   margin: 5px 0;
 }
 
+.image-and-download{
+  position: relative; 
+}
+
+.download-icon {
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  position: absolute; 
+  top: 0px; 
+  right: -70px;
+  width: 40px; 
+  height: 40px; 
+  background-color: rgba(0, 0, 0, 0.7); 
+  color: yellow; 
+  border: none;
+  border-radius: 50%; 
+  z-index: 10;
+  cursor: pointer;
+}
+
+
+
+.download-button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
 
 
 

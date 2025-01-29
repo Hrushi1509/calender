@@ -199,6 +199,18 @@
   border-radius: 14px;
 }
 
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Aligns content to the left */
+  margin: 1rem 0;
+}
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
 .appointments-table {
   width: 100%;
   border-collapse: collapse;
@@ -238,6 +250,52 @@ pad: 5px 20px;
 color: #000000;
 border: none;
 }
+
+
+/* .table-container {
+  overflow-x: auto; 
+  display: block; 
+  width: 100%; 
+}
+
+.appointments-table {
+  width: 150%; 
+  border-collapse: collapse;
+  background-color: #F9FAFB;
+}
+
+.appointments-table th,
+.appointments-table td {
+  border: 1px solid #e0e0e0;
+  padding: 30px 20px;
+  text-align: left;
+}
+
+.appointments-table th {
+  background-color: #f7b500;
+  font-family: Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #000000;
+  border: none;
+}
+
+.appointments-table td {
+  font-family: Roboto, sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 30px;
+  text-align: left;
+  color: #000000;
+  border: none;
+} */
+
+
+
 
 
 .status-dropdown {

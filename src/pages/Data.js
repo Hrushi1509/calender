@@ -16,7 +16,6 @@ const Data = () => {
         setAuthData(null); // Clear context or state
         navigate('/login')
     };
-    console.log('showTable:', showTable);
     return (
         <div>
             {/* <div className='btn-header'>
